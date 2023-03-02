@@ -1,22 +1,32 @@
 use tokio::{
-    io::{AsyncReadExt, AsyncWriteExt},
+    io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     net::TcpStream,
 };
 
 #[tokio::main]
 async fn main() {
     let mut stream = TcpStream::connect("localhost:8080").await.unwrap();
-    let (mut reader, mut writer) = stream.split();
-    loop {
-        let mut buf = String::new();
-        std::io::stdin().read_line(&mut buf).unwrap();
-        writer.write_all(buf.as_bytes()).await.unwrap();
+    let (mut reader, mut writer) = stream.into_split();
 
-        let mut buf = [0; 1024];
-        let n = reader.read(&mut buf).await.unwrap();
-        if n == 0 {
-            return;
+    tokio::spawn(async move {
+        //receive from server
+        let mut line = String::new();
+        let mut reader = BufReader::new(reader);
+        loop {
+            reader.read_line(&mut line).await.unwrap();
+            println!("{}", line);
+            line.clear();
         }
-        println!("{}: {}", "localhost", String::from_utf8_lossy(&buf[..n]));
-    }
+    });
+
+    tokio::spawn(async move {
+        //send to server
+        loop {
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).unwrap();
+            writer.write_all(input.as_bytes()).await.unwrap();
+        }
+    });
+
+    loop {}
 }
