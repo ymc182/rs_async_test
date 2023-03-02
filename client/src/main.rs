@@ -1,11 +1,16 @@
+use std::env;
 use tokio::{
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     net::TcpStream,
 };
-
 #[tokio::main]
 async fn main() {
-    let mut stream = TcpStream::connect("localhost:8080").await.unwrap();
+    let PORT = env::var("PORT").unwrap_or("8080".to_string());
+    let HOST = "localhost";
+    let mut stream = TcpStream::connect(format!("{}:{}", HOST, PORT))
+        .await
+        .unwrap();
+
     let (mut reader, mut writer) = stream.into_split();
 
     tokio::spawn(async move {

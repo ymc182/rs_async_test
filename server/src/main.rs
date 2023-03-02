@@ -6,7 +6,7 @@ use tokio::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let listener = TcpListener::bind("localhost:8080").await?;
+    let listener = TcpListener::bind("localhost").await?;
     let (tx, rx) = broadcast::channel::<String>(10);
     loop {
         let (socket, addr) = listener.accept().await?;
@@ -33,20 +33,15 @@ async fn handle_connection(
                             if result.unwrap() == 0 {
                                  break;
                             }
-              tx.send(line.clone()).unwrap();
-              println!("{}: {}", addr, line);
+              tx.send(format!("{}: {}", addr, line)).unwrap();
+
               line.clear();
             },
 
-                        result = rx.recv() =>{
-                                                    if let Ok(msg) = result.clone() {
-                                                            writer.write_all(format!(
-                                                                                                                                        "{}: {}",
-                                                                                                                                        addr, msg
-                                                                                                                        ).as_bytes()
-                                                                                                                        ).await.unwrap();
-                                                    }
-                                                }
+              result = rx.recv() =>{
+                 if let Ok(msg) = result.clone() {
+                    writer.write_all(msg.as_bytes()).await.unwrap();                  }
+              }
         }
 
         //receive from all clients
