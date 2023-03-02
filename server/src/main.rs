@@ -7,7 +7,7 @@ use tokio::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let PORT = env::var("PORT").unwrap_or("8080".to_string());
-    let HOST = "localhost";
+    let HOST = "0.0.0.0";
     let listener = TcpListener::bind(format!("{}:{}", HOST, PORT)).await?;
 
     let (tx, rx) = broadcast::channel::<String>(10);

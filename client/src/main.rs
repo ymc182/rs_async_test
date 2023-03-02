@@ -5,9 +5,7 @@ use tokio::{
 };
 #[tokio::main]
 async fn main() {
-    let PORT = env::var("PORT").unwrap_or("8080".to_string());
-    let HOST = "localhost";
-    let mut stream = TcpStream::connect(format!("{}:{}", HOST, PORT))
+    let mut stream = TcpStream::connect("https://rsasynctest-production.up.railway.app:8080")
         .await
         .unwrap();
 
