@@ -1,12 +1,15 @@
+use std::env;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
     net::{TcpListener, TcpStream},
     sync::broadcast,
 };
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let listener = TcpListener::bind("localhost").await?;
+    let PORT = env::var("PORT").unwrap_or("8080".to_string());
+    let HOST = "localhost";
+    let listener = TcpListener::bind(format!("{}:{}", HOST, PORT)).await?;
+
     let (tx, rx) = broadcast::channel::<String>(10);
     loop {
         let (socket, addr) = listener.accept().await?;
